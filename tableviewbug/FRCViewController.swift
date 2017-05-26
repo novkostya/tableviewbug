@@ -54,7 +54,7 @@ class FRCViewController: UIViewController {
     }
 
     func doit() {
-        insertItems(("B", "1"), ("B", "2"), ("C", "1"))
+        insertItems(("B", "1"), ("B", "2"), ("C", "1"), ("D", "0"))
         
         let request = NSFetchRequest<Item>(entityName: "Item")
         request.predicate = NSPredicate(format: "section = %@ AND row = %@", "D", "2")
@@ -78,8 +78,12 @@ extension FRCViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
         let item = frc.object(at: indexPath)
-        cell.textLabel?.text = "\(item.section!) \(item.row!)"
+        configure(cell: cell, with: item)
         return cell
+    }
+    
+    func configure(cell: UITableViewCell, with item: Item) {
+        cell.textLabel?.text = "\(item.section!) \(item.row!)"
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -114,7 +118,11 @@ extension FRCViewController: NSFetchedResultsControllerDelegate {
             tableView.deleteRows(at: [indexPath! as IndexPath], with: .fade)
         case .update:
             print("~~~ reload (\(indexPath!.section), \(indexPath!.row))")
-            tableView.reloadRows(at: [indexPath! as IndexPath], with: .none)
+//            tableView.reloadRows(at: [indexPath! as IndexPath], with: .none)
+            if let cell = tableView.cellForRow(at: indexPath!),
+                let item = controller.object(at: newIndexPath!) as? Item {
+                configure(cell: cell, with: item)
+            }
         case .move:
             print("~~~ move (\(indexPath!.section), \(indexPath!.row)) -> (\(newIndexPath!.section), \(newIndexPath!.row))")
             if indexPath! == newIndexPath! {
