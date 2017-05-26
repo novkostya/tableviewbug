@@ -13,6 +13,9 @@ class FRCViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
+    let insertedSections = NSMutableIndexSet()
+    let deletedSections = NSMutableIndexSet()
+    
     let moc: NSManagedObjectContext = {
         let modelURL = Bundle.main.url(forResource: "Model", withExtension:"momd")!
         let mom = NSManagedObjectModel(contentsOf: modelURL)!
@@ -54,7 +57,7 @@ class FRCViewController: UIViewController {
     }
 
     func doit() {
-        insertItems(("B", "1"), ("B", "2"), ("C", "1"))
+        insertItems(("B", "1"), ("B", "2"), ("C", "1"), ("D", "0"))
         
         let request = NSFetchRequest<Item>(entityName: "Item")
         request.predicate = NSPredicate(format: "section = %@ AND row = %@", "D", "2")
@@ -102,16 +105,26 @@ extension FRCViewController: NSFetchedResultsControllerDelegate {
             print("~~~ \(l)")
         }
         tableView.endUpdates()
+        insertedSections.removeAllIndexes()
+        deletedSections.removeAllIndexes()
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
-            print("~~~ insert (\(newIndexPath!.section), \(newIndexPath!.row))")
-            tableView.insertRows(at: [newIndexPath! as IndexPath], with: .fade)
+            if insertedSections.contains(newIndexPath!.section) {
+                print("~~~ ignoring insert (\(newIndexPath!.section), \(newIndexPath!.row))")
+            } else {
+                print("~~~ insert (\(newIndexPath!.section), \(newIndexPath!.row))")
+                tableView.insertRows(at: [newIndexPath! as IndexPath], with: .fade)
+            }
         case .delete:
-            print("~~~ delete (\(indexPath!.section), \(indexPath!.row))")
-            tableView.deleteRows(at: [indexPath! as IndexPath], with: .fade)
+            if deletedSections.contains(indexPath!.section) {
+                print("~~~ ignoring delete (\(indexPath!.section), \(indexPath!.row))")
+            } else {
+                print("~~~ delete (\(indexPath!.section), \(indexPath!.row))")
+                tableView.deleteRows(at: [indexPath! as IndexPath], with: .fade)
+            }
         case .update:
             print("~~~ reload (\(indexPath!.section), \(indexPath!.row))")
             tableView.reloadRows(at: [indexPath! as IndexPath], with: .none)
@@ -131,9 +144,11 @@ extension FRCViewController: NSFetchedResultsControllerDelegate {
         case .insert:
             print("~~~ insert section \(sectionIndex)")
             tableView.insertSections(NSIndexSet(index: sectionIndex) as IndexSet, with: .fade)
+            insertedSections.add(sectionIndex)
         case .delete:
             print("~~~ delete section \(sectionIndex)")
             tableView.deleteSections(NSIndexSet(index: sectionIndex) as IndexSet, with: .fade)
+            deletedSections.add(sectionIndex)
         case .move:
             break
         case .update:
