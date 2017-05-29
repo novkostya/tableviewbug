@@ -114,7 +114,9 @@ extension FRCViewController: NSFetchedResultsControllerDelegate {
             tableView.deleteRows(at: [indexPath! as IndexPath], with: .fade)
         case .update:
             print("~~~ reload (\(indexPath!.section), \(indexPath!.row))")
-            tableView.reloadRows(at: [indexPath! as IndexPath], with: .none)
+//            tableView.reloadRows(at: [newIndexPath! as IndexPath], with: .none)
+            tableView.deleteRows(at: [indexPath! as IndexPath], with: .none)
+            tableView.insertRows(at: [newIndexPath! as IndexPath], with: .none)
         case .move:
             print("~~~ move (\(indexPath!.section), \(indexPath!.row)) -> (\(newIndexPath!.section), \(newIndexPath!.row))")
             if indexPath! == newIndexPath! {
